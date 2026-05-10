@@ -47,6 +47,19 @@ Tous les emails générés par l'application ont été transformés en véritabl
 
 ---
 
+## 🛡️ Sécurité & Authentification Avancée
+
+La sécurité des données et des accès est au cœur de SmartLibrary, respectant les normes de développement modernes :
+
+- **Authentification Sécurisée & Hachage :** Tous les mots de passe sont fortement hachés (algorithme Bcrypt) avant d'être sauvegardés en base de données. Même l'administrateur ne peut pas voir le mot de passe d'un adhérent.
+- **Mot de Passe Oublié :** Un système complet et sécurisé permet à l'utilisateur de réinitialiser son mot de passe de manière autonome via un lien unique et temporaire envoyé par email.
+- **Middlewares & Contrôle d'Accès (RBAC) :** Des barrières strictes (Middlewares Laravel) protègent les routes. Un adhérent ne peut pas taper l'URL du dashboard Admin sans se faire bloquer, et les visiteurs non connectés ne peuvent pas accéder au catalogue.
+- **Protection CSRF & Injections SQL :** Tous les formulaires sont protégés contre les failles CSRF (Cross-Site Request Forgery) par des tokens dynamiques. Les requêtes en base de données utilisent l'ORM Eloquent qui empêche automatiquement les injections SQL.
+- **Validation Stricte des Données :** Chaque saisie utilisateur (inscription, modification de profil, ajout d'un livre) est scrupuleusement filtrée et validée côté serveur (taille des images, format des emails, confirmation des mots de passe).
+
+---
+
+
 ## 🛠️ Fonctionnalités de A à Z (Par Rôle)
 
 ### 👨‍💼 Espace Administrateur (Gestion Totale)
