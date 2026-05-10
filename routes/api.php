@@ -36,27 +36,8 @@ Route::post('/login', function (Request $request) {
     ]);
 });
 
-// Middleware simple pour vérifier le token
-$tokenMiddleware = function ($request, $next) {
-    $token = $request->bearerToken();
-    if (!$token) {
-        return response()->json(['message' => 'Non authentifié. Token manquant.'], 401);
-    }
-
-    $user = User::where('api_token', hash('sha256', $token))->first();
-    
-    if (!$user) {
-        return response()->json(['message' => 'Non authentifié. Token invalide.'], 401);
-    }
-
-    // Auth::login($user); // Optionnel si on veut utiliser auth()->user()
-    $request->merge(['api_user' => $user]);
-
-    return $next($request);
-};
-
 // Routes protégées par le Token
-Route::middleware($tokenMiddleware)->group(function () {
+Route::middleware(\App\Http\Middleware\ApiTokenMiddleware::class)->group(function () {
     
     // Endpoint 1 : Récupérer tous les livres
     Route::get('/livres', function () {
