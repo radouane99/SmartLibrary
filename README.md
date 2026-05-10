@@ -217,8 +217,9 @@ Pour bien comprendre la puissance de SmartLibrary, voici 3 scénarios typiques :
 
 ## 👨‍💻 Développeurs & Auteurs
 
-- **ElAttar** — Architecture & Backend
-- **Soufi Rabie** — Design UI/UX, Frontend Premium & Logique Emails
+- **Radouane EL-ASRI** — Architecture & Backend& Logique Emails
+- **ElAttar Soufi Rabie** — Design UI/UX, Frontend Premium
 
 ---
 <p align="center">Fait avec ❤️, passion, et Laravel</p>
+ 
