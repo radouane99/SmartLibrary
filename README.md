@@ -196,9 +196,9 @@ Pour bien comprendre la puissance de SmartLibrary, voici 3 scénarios typiques :
 ## 🔑 Comptes de Test (Générés par le Seeder)
 
 | Rôle | Email | Mot de passe |
-|---|---|---|
-| **Administrateur** | `khaldi@gmail.com` | `khaldi` |
-| **Adhérent** | `ahmed@gmail.com` | `ahmed` |
+|---|---|---
+| **Administrateur** | [EMAIL_ADDRESS]
+| **Adhérent** | [EMAIL_ADDRESS]
 
 ---
 

@@ -16,14 +16,14 @@ class Livre extends Model
     //     return $this->belongsToMany(Adherent::class);
     // }
     use HasFactory;
-    protected $fillable=["codeL","titre","auteur","nbExemplaire","theme_id","couverture"];
+    protected $fillable = ["codeL", "titre", "auteur", "nbExemplaire", "theme_id", "couverture"];
     public function theme()
-    { 
-        return $this->belongsTo(Theme::class); 
+    {
+        return $this->belongsTo(Theme::class);
     }
     public function emprunts()
-    { 
-        return $this->hasMany(Emprunt::class); 
+    {
+        return $this->hasMany(Emprunt::class);
     }
 
 }

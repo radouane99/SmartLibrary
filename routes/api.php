@@ -5,60 +5,48 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Livre;
 use App\Models\Theme;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 
-// 1. Route pour générer le Token (Login API)
-Route::post('/login', function (Request $request) {
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
 
-    $user = User::where('email', $request->email)->first();
-
-    if (! $user || ! Hash::check($request->password, $user->password)) {
-        throw ValidationException::withMessages([
-            'email' => ['Les identifiants fournis sont incorrects.'],
-        ]);
+// 1. Route pour générer un Token rapidement (Utile pour le rapport)
+// URL: http://127.0.0.1:8000/api/dev-token
+Route::get('/dev-token', function () {
+    $user = User::first(); // Prend le premier utilisateur de la base
+    if (!$user) {
+        return response()->json(['error' => 'Aucun utilisateur trouvé. Lancez le seeder.'], 404);
     }
+    // Supprime les anciens tokens pour éviter l'encombrement
+    $user->tokens()->delete();
 
-    // Création d'un token simple
-    $token = Str::random(60);
-    $user->api_token = hash('sha256', $token);
-    $user->save();
-
-    return response()->json([
-        'message' => 'Connexion réussie',
-        'token' => $token,
-        'user' => $user
-    ]);
+    return $user->createToken('dev-token')->plainTextToken;
 });
 
-// Routes protégées par le Token
-Route::middleware(\App\Http\Middleware\ApiTokenMiddleware::class)->group(function () {
-    
-    // Endpoint 1 : Récupérer tous les livres
+// 2. Routes protégées par Sanctum
+// Ces routes demandent obligatoirement un Bearer Token dans Postman
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Récupérer tous les livres avec leurs thèmes
     Route::get('/livres', function () {
         return response()->json(Livre::with('theme')->get());
     });
 
-    // Endpoint 2 : Récupérer tous les thèmes
+    // Récupérer tous les thèmes
     Route::get('/themes', function () {
         return response()->json(Theme::all());
     });
 
-    // Endpoint 3 : Récupérer les informations de l'utilisateur connecté
+    // Récupérer l'utilisateur actuellement connecté via le Token
     Route::get('/user', function (Request $request) {
-        return response()->json($request->api_user);
+        return response()->json($request->user());
     });
 
-    // Endpoint : Déconnexion (Révoquer le token)
+    // Déconnexion (Supprime le token actuel)
     Route::post('/logout', function (Request $request) {
-        $user = $request->api_user;
-        $user->api_token = null;
-        $user->save();
-        return response()->json(['message' => 'Déconnexion réussie']);
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Déconnexion réussie, token supprimé.']);
     });
 });
