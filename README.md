@@ -211,7 +211,7 @@ Gestio Bib Laravel/
    php artisan key:generate
    php artisan migrate:fresh --seed
    ```
-4. **Lien de stockage (TRÈS IMPORTANT pour les photos de profil) :**
+4. Lien de stockage (TRÈS IMPORTANT pour les photos de profil) :**
    ```bash
    php artisan storage:link
    ```
@@ -265,21 +265,6 @@ Pour bien comprendre la puissance de SmartLibrary, voici 3 scénarios typiques :
 |---|---|---
 | **Administrateur** | [EMAIL_ADDRESS]
 | **Adhérent** | [EMAIL_ADDRESS]
-
----
-
-## 🚧 Résolution des Problèmes Fréquents
-
-### ❌ Les photos de profil ne s'affichent pas (Image cassée)
-**Solution :** Vous avez oublié de créer le lien symbolique. Exécutez `php artisan storage:link` dans votre terminal.
-
-### ❌ Erreur : `SQLSTATE: Access denied`
-**Solution :** Vérifiez que MySQL (XAMPP) est bien allumé et que le nom de la BD dans votre fichier `.env` est correct.
-
-### ❌ Les emails ne s'envoient pas (Timeout)
-**Solution :** Assurez-vous d'avoir bien configuré vos identifiants SMTP dans le fichier `.env` et que vous avez une connexion internet active.
-
----
 
 ## 👨‍💻 Développeurs & Auteurs
 
