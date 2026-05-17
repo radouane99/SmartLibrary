@@ -109,26 +109,92 @@ Gestio Bib Laravel/
 
 ---
 
-## 🗄️ Schéma de la Base de Données
+## 🗄️ Schéma de la Base de Données (Version Finale)
+
+> **6 tables métier + 2 tables système** — Toutes les relations sont gérées par des clés étrangères avec contraintes `CASCADE`.
 
 ```text
-┌──────────────┐       ┌──────────────┐       ┌──────────────────┐
-│    users     │       │    livres    │       │     emprunts     │
-├──────────────┤       ├──────────────┤       ├──────────────────┤
-│ id (PK)      │───┐   │ id (PK)      │───┐   │ id (PK)          │
-│ codeA        │   │   │ codeL        │   │   │ user_id (FK)─────┘
-│ name         │   └──▶│ titre        │   └──▶│ livre_id (FK)────┘
-│ email        │       │ auteur       │       │ dateEmp          │
-│ password     │       │ nbExemplaire │       │ dateRetour       │
-│ photo        │       │ theme_id(FK)─┼──┐    │ statut (enum)    │
-│ role         │       └──────────────┘  │    └──────────────────┘
-└──────────────┘                         │    ┌──────────────┐
-                                         │    │    themes    │
-                                         │    ├──────────────┤
-                                         └───▶│ id (PK)      │
-                                               │ intitule     │
-                                               └──────────────┘
+                         ┌─────────────────────────────────────────────────┐
+                         │                    themes                        │
+                         ├─────────────────────────────────────────────────┤
+                         │ id         (PK, BIGINT UNSIGNED, auto_increment) │
+                         │ codeTh     (STRING, UNIQUE)                      │
+                         │ intitule   (STRING)                              │
+                         │ created_at / updated_at (TIMESTAMPS)             │
+                         └──────────────────────┬──────────────────────────┘
+                                                │ 1
+                                                │
+                                                │ N
+┌──────────────────────────────────────┐        │       ┌─────────────────────────────────────────────────┐
+│                users                 │        │       │                    livres                        │
+├──────────────────────────────────────┤        │       ├─────────────────────────────────────────────────┤
+│ id         (PK, BIGINT UNSIGNED)     │        └──────▶│ id           (PK, BIGINT UNSIGNED)               │
+│ name       (STRING)                  │                │ codeL        (STRING, UNIQUE)                    │
+│ codeA      (STRING, UNIQUE)          │                │ titre        (STRING)                            │
+│ adresse    (STRING)                  │                │ auteur       (STRING)                            │
+│ photo      (STRING)                  │                │ nbExemplaire (INTEGER)                           │
+│ role       (STRING)                  │                │ couverture   (STRING, NULLABLE)  🆕              │
+│ email      (STRING, UNIQUE)          │                │ theme_id     (FK → themes.id) CASCADE            │
+│ email_verified_at (TIMESTAMP, NULL)  │                │ created_at / updated_at (TIMESTAMPS)             │
+│ password   (STRING, hashed Bcrypt)   │                └──────────────────────┬──────────────────────────┘
+│ remember_token (STRING, NULLABLE)    │                                       │ 1
+│ created_at / updated_at (TIMESTAMPS) │                                       │
+└────────────────┬─────────────────────┘                                       │ N
+                 │ 1                              ┌────────────────────────────┴──────────────────────────┐
+                 │                                │                        emprunts                        │
+                 │ N                              ├────────────────────────────────────────────────────────┤
+                 └───────────────────────────────▶│ id                  (PK, BIGINT UNSIGNED)              │
+                                                  │ user_id             (FK → users.id) CASCADE            │
+                 ┌────────────────────────────────│ livre_id            (FK → livres.id) CASCADE           │
+                 │ 1                              │ dateEmp             (DATE)                              │
+                 │                                │ dateRetour          (DATE) ← Date limite prévue        │
+                 │ N                              │ dateRetourEffective  (DATE, NULLABLE) 🆕 ← Retour réel │
+                 ▼                                │ statut              (STRING) 🆕                        │
+┌─────────────────────────────────┐               │                      ↳ 'en_attente' | 'valide'        │
+│          notifications          │               │                        'refuse'    | 'rendu'           │
+├─────────────────────────────────┤               │ note                (INTEGER, NULLABLE) 🆕             │
+│ id       (PK, BIGINT UNSIGNED)  │               │ commentaire         (TEXT, NULLABLE) 🆕               │
+│ user_id  (FK → users.id) CASCADE│               │ UNIQUE (user_id, livre_id, dateEmp)                    │
+│ message  (STRING)               │               │ created_at / updated_at (TIMESTAMPS)                   │
+│ type     (STRING, default:info) │               └────────────────────────────────────────────────────────┘
+│          ↳ info|success|        │
+│            warning|danger       │
+│ is_read  (BOOLEAN, default:0)   │
+│ created_at / updated_at         │
+└─────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━ TABLES SYSTÈME ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────────────────────────────────────┐   ┌──────────────────────────────────────────┐
+│          personal_access_tokens              │   │          password_reset_tokens            │
+│                 (Sanctum API) 🆕             │   │            (Reset mot de passe)          │
+├──────────────────────────────────────────────┤   ├──────────────────────────────────────────┤
+│ id              (PK)                         │   │ email      (PK, STRING)                  │
+│ tokenable_type  (STRING) ← morph            │   │ token      (STRING)                      │
+│ tokenable_id    (BIGINT) ← morph            │   │ created_at (TIMESTAMP, NULLABLE)         │
+│ name            (TEXT)                       │   └──────────────────────────────────────────┘
+│ token           (STRING 64, UNIQUE)          │
+│ abilities       (TEXT, NULLABLE)             │   ┌──────────────────────────────────────────┐
+│ last_used_at    (TIMESTAMP, NULLABLE)        │   │                 sessions                  │
+│ expires_at      (TIMESTAMP, NULLABLE)        │   ├──────────────────────────────────────────┤
+│ created_at / updated_at                      │   │ id           (PK, STRING)                │
+└──────────────────────────────────────────────┘   │ user_id      (FK → users.id, NULLABLE)  │
+                                                   │ ip_address   (STRING 45, NULLABLE)       │
+                                                   │ user_agent   (TEXT, NULLABLE)             │
+                                                   │ payload      (LONGTEXT)                  │
+                                                   │ last_activity (INTEGER)                  │
+                                                   └──────────────────────────────────────────┘
 ```
+
+### 🔗 Résumé des Relations
+
+| Relation | Type | Détail |
+|---|---|---|
+| `themes` → `livres` | **1 à N** | Un thème contient plusieurs livres |
+| `users` → `emprunts` | **1 à N** | Un utilisateur peut avoir plusieurs emprunts |
+| `livres` → `emprunts` | **1 à N** | Un livre peut être emprunté plusieurs fois |
+| `users` → `notifications` | **1 à N** | Un utilisateur reçoit plusieurs notifications |
+| `users` → `personal_access_tokens` | **1 à N** | Un utilisateur peut avoir plusieurs tokens API (Sanctum) |
 
 ---
 
