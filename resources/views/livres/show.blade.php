@@ -19,11 +19,19 @@
                 <div class="bg-dark text-center py-5 position-relative overflow-hidden" style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
                     {{-- Effet de fond flou --}}
                     @if($livre->couverture)
+                        @php
+                            $coverUrl = \Illuminate\Support\Str::startsWith($livre->couverture, ['http://', 'https://']) ? $livre->couverture : asset('storage/' . $livre->couverture);
+                        @endphp
                         <div class="position-absolute top-0 start-0 w-100 h-100 opacity-25" 
-                             style="background-image: url('{{ asset('storage/' . $livre->couverture) }}'); background-size: cover; filter: blur(20px);"></div>
-                        <img src="{{ asset('storage/' . $livre->couverture) }}" 
+                             style="background-image: url('{{ $coverUrl }}'); background-size: cover; filter: blur(20px);"></div>
+                        <img src="{{ $coverUrl }}" 
                              class="rounded shadow-lg position-relative" 
-                             style="width: 220px; height: 320px; object-fit: cover; z-index: 2;" alt="{{ $livre->titre }}">
+                             style="width: 220px; height: 320px; object-fit: cover; z-index: 2;" alt="{{ $livre->titre }}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="rounded shadow-lg position-relative d-flex align-items-center justify-content-center" 
+                             style="display:none !important; width: 220px; height: 320px; z-index: 2; background: linear-gradient(135deg, #1e3a8a, #3b82f6);">
+                             <span style="font-size: 80px;">📖</span>
+                        </div>
                     @else
                         <div class="position-absolute top-0 start-0 w-100 h-100 opacity-25" 
                              style="background: linear-gradient(135deg, #1e3a8a, #7c3aed); filter: blur(20px);"></div>

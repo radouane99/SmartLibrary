@@ -61,11 +61,15 @@ class EmpruntController extends Controller
      */
     public function store(Request $request)
     {
+        // Si l'adhérent fait une demande, dateRetour n'est pas encore connue.
+        // Si l'admin crée directement un emprunt validé, il doit fixer la date de retour.
+        $isAdmin = Auth::user()->role === 'admin';
+
         $request->validate([
-            'livre_id' => 'bail|required',
+            'livre_id'    => 'bail|required',
             'adherent_id' => 'bail|required',
-            'dateEmp' => 'bail|required|after:yesterday',
-            'dateRetour' => 'bail|required|after:tomorrow'
+            'dateEmp'     => 'bail|required|after:yesterday',
+            'dateRetour'  => $isAdmin ? 'bail|required|after:tomorrow' : 'nullable|date|after:tomorrow',
         ]);
 
         $livre = Livre::findOrFail($request->livre_id);
@@ -85,11 +89,12 @@ class EmpruntController extends Controller
 
         try {
             $emprunt = new Emprunt();
-            $emprunt->livre_id = $request->livre_id;
-            $emprunt->user_id = $request->adherent_id;
-            $emprunt->dateEmp = $request->dateEmp;
-            $emprunt->dateRetour = $request->dateRetour;
-            $emprunt->statut = (Auth::user()->role === 'adherent') ? 'en_attente' : 'valide';
+            $emprunt->livre_id  = $request->livre_id;
+            $emprunt->user_id   = $request->adherent_id;
+            $emprunt->dateEmp   = $request->dateEmp;
+            // dateRetour est NULL pour les demandes en_attente (l'admin la fixe à la validation)
+            $emprunt->dateRetour = $request->filled('dateRetour') ? $request->dateRetour : null;
+            $emprunt->statut    = $isAdmin ? 'valide' : 'en_attente';
             $emprunt->save();
 
             $livre->nbExemplaire -= 1;

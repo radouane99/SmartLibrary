@@ -11,7 +11,14 @@
                     {{-- IMAGE --}}
                     <div class="book-cover-wrapper bg-light position-relative text-center d-flex align-items-center justify-content-center overflow-hidden" style="height: 280px;">
                         @if($el->couverture)
-                            <img src="{{ asset('storage/' . $el->couverture) }}" class="w-100 h-100 object-fit-cover transition-img" alt="{{ $el->titre }}">
+                            <img src="{{ \Illuminate\Support\Str::startsWith($el->couverture, ['http://', 'https://']) ? $el->couverture : asset('storage/' . $el->couverture) }}"
+                                 class="w-100 h-100 object-fit-cover transition-img"
+                                 alt="{{ $el->titre }}"
+                                 onerror="this.classList.add('d-none'); this.nextElementSibling.classList.remove('d-none'); this.nextElementSibling.classList.add('d-flex');">
+                            <div class="w-100 h-100 align-items-center justify-content-center transition-img d-none"
+                                 style="background: linear-gradient(135deg, {{ ['#1e3a8a','#7c3aed','#059669','#dc2626','#d97706','#0891b2'][$el->id % 6] }}, {{ ['#3b82f6','#a78bfa','#34d399','#f87171','#fbbf24','#22d3ee'][$el->id % 6] }});">
+                                <span style="font-size: 64px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">📖</span>
+                            </div>
                         @else
                             <div class="w-100 h-100 d-flex align-items-center justify-content-center transition-img" 
                                  style="background: linear-gradient(135deg, {{ ['#1e3a8a','#7c3aed','#059669','#dc2626','#d97706','#0891b2'][$el->id % 6] }}, {{ ['#3b82f6','#a78bfa','#34d399','#f87171','#fbbf24','#22d3ee'][$el->id % 6] }});">
