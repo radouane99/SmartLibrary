@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/Vite-6.x-646CFF?style=for-the-badge&logo=vite&logoColor=white"/>
 </p>
 
-> **SmartLibrary** est une application web moderne et professionnelle de gestion de bibliothèque. Pensée pour offrir une expérience utilisateur haut de gamme (Premium), elle automatise la gestion des emprunts, centralise la communication par email, et propose une interface utilisateur à la pointe des standards actuels.
+> **SmartLibrary** est une application web moderne et professionnelle de gestion de bibliothèque, **entièrement conçue et développée par Radouane EL-ASRI et ElAttar Soufi Rabie**. Pensée pour offrir une expérience utilisateur haut de gamme (Premium), elle automatise la gestion des emprunts, centralise la communication par email, et propose une interface utilisateur à la pointe des standards actuels.
 
 ---
 
@@ -116,7 +116,7 @@ Gestio Bib Laravel/
 
 ## ⚡ Tests API avec Postman (Laravel Sanctum)
 
-L'application expose une API RESTful sécurisée par **Laravel Sanctum**. Si vous souhaitez interroger la bibliothèque depuis une autre application ou en local, voici les 3 endpoints principaux à tester dans Postman :
+L'application expose une API RESTful sécurisée par **Laravel Sanctum**. Si vous souhaitez interroger la bibliothèque depuis une autre application ou en local, voici les 4 endpoints principaux à tester dans Postman :
 
 ### 1. Générer le Token (Authentification Rapide)
 - **Méthode :** `GET`
@@ -129,8 +129,10 @@ L'application expose une API RESTful sécurisée par **Laravel Sanctum**. Si vou
 - **URL :** `http://127.0.0.1:8000/api/livres`
 - **Autorisation (Onglet Authorization dans Postman) :**
   - Type : `Bearer Token`
-  - Token : *Collez le token récupéré à l'étape 1*
-- **Description :** Retourne la liste complète des livres avec les détails de leurs thèmes respectifs au format JSON.
+  - Token : *Collez le token récupéré à l'étape 1*-
+  - Par exemple : "8|d3hCrxtmr0EDJtUbxxQWCQmQezaVEvAHtran2M5Tb67d77b7"
+  - **Description :** Retourne la liste complète des livres avec les détails de leurs thèmes respectifs au format JSON.
+![alt text](image-1.png)
 
 ### 3. Vérifier le profil de l'utilisateur connecté
 - **Méthode :** `GET`
@@ -138,7 +140,19 @@ L'application expose une API RESTful sécurisée par **Laravel Sanctum**. Si vou
 - **Autorisation (Onglet Authorization) :**
   - Type : `Bearer Token`
   - Token : *Collez le token récupéré à l'étape 1*
+  - Par exemple : "8|d3hCrxtmr0EDJtUbxxQWCQmQezaVEvAHtran2M5Tb67d77b7" 
 - **Description :** Renvoie les informations strictement confidentielles de l'utilisateur possédant le token (Nom, Email, Rôle).
+![alt text](image-2.png)
+
+### 4. Récupérer la liste des thèmes (catégories)
+- **Méthode :** `GET`
+- **URL :** `http://127.0.0.1:8000/api/themes`
+- **Autorisation (Onglet Authorization) :**
+  - Type : `Bearer Token`
+  - Token : *Collez le token récupéré à l'étape 1* 
+  par exemple : "7|QlaBCXGgzeLQL6D761GpW1rGC9XIIS1ZSBzaRim227e938be"
+- **Description :** Retourne la liste complète de tous les thèmes/catégories de livres disponibles au format JSON.
+![alt text](image.png)
 
 ---
 
@@ -146,58 +160,63 @@ L'application expose une API RESTful sécurisée par **Laravel Sanctum**. Si vou
 
 > **6 tables métier + 2 tables système** — Toutes les relations sont gérées par des clés étrangères avec contraintes `CASCADE`.
 
-```text
-                         ┌─────────────────────────────────────────────────┐
-                         │                    themes                        │
-                         ├─────────────────────────────────────────────────┤
-                         │ id         (PK, BIGINT UNSIGNED, auto_increment) │
-                         │ codeTh     (STRING, UNIQUE)                      │
-                         │ intitule   (STRING)                              │
-                         │ created_at / updated_at (TIMESTAMPS)             │
-                         └──────────────────────┬──────────────────────────┘
-                                                │ 1
-                                                │
-                                                │ N
-┌──────────────────────────────────────┐        │       ┌─────────────────────────────────────────────────┐
-│                users                 │        │       │                    livres                        │
-├──────────────────────────────────────┤        │       ├─────────────────────────────────────────────────┤
-│ id         (PK, BIGINT UNSIGNED)     │        └──────▶│ id           (PK, BIGINT UNSIGNED)               │
-│ name       (STRING)                  │                │ codeL        (STRING, UNIQUE)                    │
-│ codeA      (STRING, UNIQUE)          │                │ titre        (STRING)                            │
-│ adresse    (STRING)                  │                │ auteur       (STRING)                            │
-│ photo      (STRING)                  │                │ nbExemplaire (INTEGER)                           │
-│ role       (STRING)                  │                │ couverture   (STRING, NULLABLE)  🆕              │
-│ email      (STRING, UNIQUE)          │                │ theme_id     (FK → themes.id) CASCADE            │
-│ email_verified_at (TIMESTAMP, NULL)  │                │ created_at / updated_at (TIMESTAMPS)             │
-│ password   (STRING, hashed Bcrypt)   │                └──────────────────────┬──────────────────────────┘
-│ remember_token (STRING, NULLABLE)    │                                       │ 1
-│ created_at / updated_at (TIMESTAMPS) │                                       │
-└────────────────┬─────────────────────┘                                       │ N
-                 │ 1                              ┌────────────────────────────┴──────────────────────────┐
-                 │                                │                        emprunts                        │
-                 │ N                              ├────────────────────────────────────────────────────────┤
-                 └───────────────────────────────▶│ id                  (PK, BIGINT UNSIGNED)              │
-                                                  │ user_id             (FK → users.id) CASCADE            │
-                 ┌────────────────────────────────│ livre_id            (FK → livres.id) CASCADE           │
-                 │ 1                              │ dateEmp             (DATE)                              │
-                 │                                │ dateRetour          (DATE) ← Date limite prévue        │
-                 │ N                              │ dateRetourEffective  (DATE, NULLABLE) 🆕 ← Retour réel │
-                 ▼                                │ statut              (STRING) 🆕                        │
-┌─────────────────────────────────┐               │                      ↳ 'en_attente' | 'valide'        │
-│          notifications          │               │                        'refuse'    | 'rendu'           │
-├─────────────────────────────────┤               │ note                (INTEGER, NULLABLE) 🆕             │
-│ id       (PK, BIGINT UNSIGNED)  │               │ commentaire         (TEXT, NULLABLE) 🆕               │
-│ user_id  (FK → users.id) CASCADE│               │ UNIQUE (user_id, livre_id, dateEmp)                    │
-│ message  (STRING)               │               │ created_at / updated_at (TIMESTAMPS)                   │
-│ type     (STRING, default:info) │               └────────────────────────────────────────────────────────┘
-│          ↳ info|success|        │
-│            warning|danger       │
-│ is_read  (BOOLEAN, default:0)   │
-│ created_at / updated_at         │
-└─────────────────────────────────┘
+```mermaid
+erDiagram
+    THEMES ||--o{ LIVRES : "1 thème a N livres"
+    USERS ||--o{ EMPRUNTS : "1 user fait N emprunts"
+    LIVRES ||--o{ EMPRUNTS : "1 livre a N emprunts"
+    USERS ||--o{ NOTIFICATIONS : "1 user reçoit N notifs"
+
+    THEMES {
+        bigint id PK
+        string codeTh UK
+        string intitule
+        timestamp created_at
+    }
+    
+    LIVRES {
+        bigint id PK
+        string codeL UK
+        string titre
+        string auteur
+        int nbExemplaire
+        string couverture "Chemin URL"
+        bigint theme_id FK
+        timestamp created_at
+    }
+    
+    USERS {
+        bigint id PK
+        string name
+        string codeA UK
+        string role
+        string email UK
+        timestamp created_at
+    }
+    
+    EMPRUNTS {
+        bigint id PK
+        bigint user_id FK "UK Composite"
+        bigint livre_id FK "UK Composite"
+        date dateEmp "UK Composite"
+        date dateRetour "Prévue"
+        date dateRetourEffective "NULLABLE"
+        string statut
+        timestamp created_at
+    }
+    
+    NOTIFICATIONS {
+        bigint id PK
+        bigint user_id FK
+        string message
+        boolean is_read
+        timestamp created_at
+    }
+```
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━ TABLES SYSTÈME ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+```text
 ┌──────────────────────────────────────────────┐   ┌──────────────────────────────────────────┐
 │          personal_access_tokens              │   │          password_reset_tokens            │
 │                 (Sanctum API) 🆕             │   │            (Reset mot de passe)          │
@@ -263,12 +282,12 @@ L'application expose une API RESTful sécurisée par **Laravel Sanctum**. Si vou
 ### Scénario 1 : Le nouvel adhérent réserve un livre
 1. **L'Adhérent** crée son compte via la page d'inscription.
 2. Il arrive sur le **Catalogue**, cherche un livre ("Harry Potter" par exemple) et clique sur **"Réserver"**.
-3. *Magie !* Il reçoit instantanément un **email premium** lui confirmant que sa demande a été envoyée à l'administrateur.
+3. **Résultat :** Il reçoit instantanément un **email premium** lui confirmant que sa demande a été envoyée à l'administrateur.
 
 ### Scénario 2 : L'Admin valide la demande
 1. **L'Administrateur** se connecte et voit une notification sur son Dashboard.
 2. Il va dans "Emprunts", trouve la demande en statut "En attente", et clique sur **"Valider"**.
-3. *Magie !* L'adhérent reçoit un **email de validation** lui indiquant qu'il peut venir chercher le livre, avec la date limite de retour, et l'administrateur peut générer le reçu **PDF**.
+3. **Résultat :** L'adhérent reçoit un **email de validation** lui indiquant qu'il peut venir chercher le livre, avec la date limite de retour, et l'administrateur peut générer le reçu **PDF**.
 
 ### Scénario 3 : Le Retour et les Retards
 - **Option A (Rendu) :** L'adhérent ramène le livre, l'Admin clique sur **"Marqué comme Rendu"**. L'adhérent reçoit un email le remerciant.
@@ -280,8 +299,8 @@ L'application expose une API RESTful sécurisée par **Laravel Sanctum**. Si vou
 
 | Rôle | Email | Mot de passe |
 |---|---|---|
-| **Administrateur** | khaldi@gmail.com | khaldi |
-| **Adhérent** | ahmed@gmail.com | ahmed |
+| **Administrateur** | [EMAIL_ADDRESS] 
+| **Adhérent** | [EMAIL_ADDRESS] 
 
 ## 👨‍💻 Développeurs & Auteurs
 - **Radouane EL-ASRI** — Architecture & Backend & Logique Emails
