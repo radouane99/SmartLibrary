@@ -107,6 +107,7 @@ Gestio Bib Laravel/
 │       └── welcome.blade.php   ← Vue alternative/fallback
 ├── routes/
 │   ├── api.php              ← Définition des endpoints REST sécurisés par le token Bearer Sanctum
+│   ├── console.php          ← Commandes Artisan et tâches planifiées (ex: envoi des rappels automatiques)
 │   └── web.php              ← Définition des routes principales protégées par middlewares (auth, admin)
 └── composer.json            ← Dépendances du projet (DomPDF, Sanctum, etc.)
 ```
